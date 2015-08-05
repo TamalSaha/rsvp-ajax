@@ -1,0 +1,30 @@
+{
+  "name": "rsvp-ajax",
+  "version": "1.0.0",
+  "description": "Simple AJAX library built on top of RSVP promises. This library has no dependency other than rsvp.js",
+  "main": "rsvp-ajax.js",
+  "devDependencies": {
+    "jest-cli": "^0.4.0",
+    "rsvp": "^3.0.0"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/truward/rsvp-ajax.git"
+  },
+  "keywords": [
+    "rsvp",
+    "ajax",
+    "javascript",
+    "npm",
+    "nodejs"
+  ],
+  "author": "Alexander Shabanov <avshabanov@gmail.com> (https://github.com/avshabanov)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/truward/rsvp-ajax/issues"
+  },
+  "homepage": "https://github.com/truward/rsvp-ajax"
+}
