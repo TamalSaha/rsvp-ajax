@@ -9,11 +9,17 @@ describe('request handling', function () {
   // Stub for XMLHttpRequest
   //
 
+  var DONE = 'DONE';
+
   var xhrStub = function StubHttpRequest() {
     this._headers = {};
     this._bodies = [];
     this.onreadystatechange = null;
     this.responseType = null;
+    this.DONE = DONE;
+    this.readyState = null;
+    this.response = null;
+    this.status = null;
     stubs.push(this);
   };
 
@@ -37,9 +43,30 @@ describe('request handling', function () {
   //
 
   it('should handle GET', function () {
+    // Given:
     var s = require('../rsvp-ajax.js');
+    var mockResult = {"mock": "result"};
+    var resultHolder = null;
+    var stub = null;
+
+    // When:
     var promise = s.request("GET", "/rest/something");
+    promise.then(function (data) {
+      resultHolder = data;
+    });
+
+    // Then:
     expect(stubs.length).toBe(1);
+    expect(resultHolder).toBe(null);
+
+    // prepare the result, signal about completion and make sure promise handler caught it
+    stub = stubs[0];
+    stub.status = 200;
+    stub.readyState = DONE;
+    stub.response = mockResult;
+    stub.onreadystatechange();
+
+    expect(resultHolder).toEqual(mockResult);
   });
 });
 
