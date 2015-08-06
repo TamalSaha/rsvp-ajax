@@ -2,11 +2,12 @@
 jest.dontMock('../rsvp-ajax.js');
 jest.dontMock('rsvp');
 
-var s = require('../rsvp-ajax.js');
-
-
-describe('should handle requests', function () {
+describe('request handling', function () {
   var stubs;
+
+  //
+  // Stub for XMLHttpRequest
+  //
 
   var xhrStub = function StubHttpRequest() {
     this._headers = {};
@@ -28,12 +29,17 @@ describe('should handle requests', function () {
   
   beforeEach(function () {
     stubs = []; // clear stubs
-    var xhrModuleMock = require('../xhr.js');
-    xhrModuleMock.exports = xhrStub;
+    jest.setMock('../xhr.js', xhrStub);
   });
 
-  it('should handle GET request', function () {
-    expect(2*2).toBe(4);
+  //
+  // Test Cases
+  //
+
+  it('should handle GET', function () {
+    var s = require('../rsvp-ajax.js');
+    var promise = s.request("GET", "/rest/something");
+    expect(stubs.length).toBe(1);
   });
 });
 
