@@ -1,4 +1,5 @@
 var rsvp = require('rsvp');
+var HttpRequest = require('./xhr.js');
 
 
 /** Global AJAX error handlers used in onError function */
@@ -76,7 +77,7 @@ function requestObject(options) {
   var contentType = options.contentType || null;
 
   return new rsvp.Promise(function(resolve, reject) {
-    var client = new XMLHttpRequest();
+    var client = new HttpRequest();
     client.open(method, url);
     client.onreadystatechange = createHttpRequestHandler(resolve, reject);
     client.responseType = responseType;
@@ -103,7 +104,7 @@ function request(method, url, requestBody) {
   return requestObject({
     method: method,
     url: url,
-    requestBody: JSON.stringify(requestBody),
+    requestBody: (requestBody != null ? JSON.stringify(requestBody) : null),
     accept: "application/json",
     contentType: "application/json",
     responseType: "json"
