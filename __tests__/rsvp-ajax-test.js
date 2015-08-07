@@ -25,12 +25,12 @@ describe('request handling', function () {
 
   xhrStub.prototype.open = function (method, url) {}
 
-  xhrStub.setRequestHeader = function (headerName, value) {
+  xhrStub.prototype.setRequestHeader = function (headerName, value) {
     this._headers[headerName] = value;
   };
 
-  xhrStub.send = function (body) {
-    stubBody.push(body);
+  xhrStub.prototype.send = function (body) {
+    this._bodies.push(body);
   };
   
   beforeEach(function () {
@@ -47,12 +47,10 @@ describe('request handling', function () {
     var s = require('../rsvp-ajax.js');
     var mockResult = {"mock": "result"};
     var resultHolder = null;
-    var stub = null;
 
     // When:
     var promise = s.request("GET", "/rest/something");
     promise.then(function (data) {
-      console.log("capturing data", data);
       resultHolder = data;
     });
 
@@ -61,14 +59,45 @@ describe('request handling', function () {
     expect(resultHolder).toBe(null);
 
     // prepare the result, signal about completion and make sure promise handler caught it
-    stub = stubs[0];
+    var stub = stubs[0];
     stub.status = 200;
     stub.readyState = DONE;
     stub.response = mockResult;
     stub.onreadystatechange();
 
-    // TODO: test it
-    //expect(resultHolder).toEqual(mockResult);
+    jest.runAllTimers();
+
+    expect(resultHolder).toEqual(mockResult);
+  });
+
+  it('should handle POST', function () {
+    // Given:
+    var s = require('../rsvp-ajax.js');
+    var mockResult = {"mock": "result"};
+    var body = {a: 1, b: [2], c: "3", d: {e: 4}};
+    var resultHolder = null;
+
+    // When:
+    var promise = s.request("POST", "/rest/something", body);
+    promise.then(function (data) {
+      resultHolder = data;
+    });
+
+    // Then:
+    expect(stubs.length).toBe(1);
+    expect(resultHolder).toBe(null);
+
+    // prepare the result, signal about completion and make sure promise handler caught it
+    var stub = stubs[0];
+    stub.status = 200;
+    stub.readyState = DONE;
+    stub.response = mockResult;
+    stub.onreadystatechange();
+
+    jest.runAllTimers();
+
+    expect(resultHolder).toEqual(mockResult);
+    expect(stub._bodies[0]).toEqual(JSON.stringify(body));
   });
 });
 
