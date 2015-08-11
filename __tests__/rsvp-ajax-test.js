@@ -2,14 +2,15 @@
 jest.dontMock('../rsvp-ajax.js');
 jest.dontMock('rsvp');
 
+
+var DONE = 'DONE';
+
 describe('request handling', function () {
   var stubs;
 
   //
   // Stub for XMLHttpRequest
   //
-
-  var DONE = 'DONE';
 
   var xhrStub = function StubHttpRequest() {
     this._headers = {};
@@ -98,6 +99,40 @@ describe('request handling', function () {
 
     expect(resultHolder).toEqual(mockResult);
     expect(stub._bodies[0]).toEqual(JSON.stringify(body));
+  });
+
+  it('should emit error event', function () {
+    // Given:
+    var s = require('../rsvp-ajax.js');
+    var holder = {xhr: null, catchXhr: null, ret: null};
+    s.on(s.XHR_ERROR, function (xhr) {
+      holder.xhr = xhr;
+    });
+
+    // When:
+    var promise = s.request("POST", "/rest/something", {});
+    promise.then(function () {
+      holder.ret = 1;
+    });
+    promise.catch(function (d) {
+      holder.catchXhr = d;
+    });
+
+    // Then:
+    var stub = stubs[0];
+    stub.status = 404; // Not Found
+    stub.readyState = DONE;
+    stub.response = "false";
+    stub.onreadystatechange();
+
+    expect(holder.ret).toBe(null);
+    expect(holder.catchXhr).toBe(null);
+
+    jest.runAllTimers();
+
+    expect(holder.xhr).toEqual(stub);
+    expect(holder.ret).toBe(null);
+    expect(holder.catchXhr).toEqual(stub);
   });
 });
 

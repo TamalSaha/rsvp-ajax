@@ -1,9 +1,23 @@
 var rsvp = require('rsvp');
 var HttpRequest = require('./xhr.js');
 
+// event names: cache miss and cache hit
+var XHR_ERROR = "xhrError";
 
-/** Global AJAX error handlers used in onError function */
-var GLOBAL_ERROR_HANDLERS = {};
+/** Global event target class */
+function GlobalCacheEventTarget() {}
+rsvp.EventTarget.mixin(GlobalCacheEventTarget.prototype);
+
+var GLOBAL_EVENT_TARGET = new GlobalCacheEventTarget();
+
+function on() {
+  return GLOBAL_EVENT_TARGET.on.apply(GLOBAL_EVENT_TARGET, arguments);
+}
+
+function off() {
+  return GLOBAL_EVENT_TARGET.off.apply(GLOBAL_EVENT_TARGET, arguments);
+}
+
 
 /**
  * Executes global error handlers. Sample error handler is shown below:
@@ -15,28 +29,15 @@ var GLOBAL_ERROR_HANDLERS = {};
  * }
  * </code>
  *
- * Installation of an error handler is as simple as calling promise's reject:
+ * Installation of an error handler is just a subscription on XHR_ERROR event:
  * <code>
- * reject(ajax.onError)
+ * var ajax = rsvp('rsvp-ajax');
+ * ...
+ * ajax.on(ajax.XHR_ERROR, sampleErrorHandler);
  * </code>
  */
 function onError(xmlHttpRequest) {
-  var errorHandlers = GLOBAL_ERROR_HANDLERS;
-  for (var handlerName in errorHandlers) {
-    if (errorHandlers.hasOwnProperty(handlerName)) {
-      var fn = errorHandlers[handlerName];
-      if (fn) {
-        fn(xmlHttpRequest, handlerName);
-      }
-    }
-  }
-}
-
-/**
- * Installs new global error handler
- */
-function installGlobalErrorHandler(key, handler) {
-  GLOBAL_ERROR_HANDLERS[key] = handler;
+  return GLOBAL_EVENT_TARGET.trigger(XHR_ERROR, xmlHttpRequest);
 }
 
 /** Helper function, that creates a handler for XMLHttpRequest.onreadystatechange */
@@ -115,9 +116,14 @@ function request(method, url, requestBody) {
 // Exports
 //
 
-// Error Handling
-module.exports.installGlobalErrorHandler = installGlobalErrorHandler;
+// Global Handlers
+module.exports.on = on;
+module.exports.off = off;
+
+// Event Names
+module.exports.XHR_ERROR = XHR_ERROR;
 
 // Making AJAX requests
 module.exports.requestObject = requestObject;
 module.exports.request = request;
+
