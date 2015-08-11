@@ -134,6 +134,30 @@ describe('request handling', function () {
     expect(holder.ret).toBe(null);
     expect(holder.catchXhr).toEqual(stub);
   });
+
+  it('should unsubscribe global error handler', function () {
+    // Given:
+    var s = require('../rsvp-ajax.js');
+    var holder = {xhr: null};
+    var fn = s.on(s.XHR_ERROR, function (xhr) {
+      holder.xhr = xhr;
+    });
+    s.off(s.XHR_ERROR, fn);
+
+    // When:
+    var promise = s.request("POST", "/rest/something", {});
+
+    // Then:
+    var stub = stubs[0];
+    stub.status = 404; // Not Found
+    stub.readyState = DONE;
+    stub.response = "false";
+    stub.onreadystatechange();
+
+    jest.runAllTimers();
+
+    expect(holder.xhr).toEqual(null);
+  });
 });
 
 
