@@ -72,7 +72,7 @@ All the parameters expected by ``requestObject`` function:
 * ``requestBody`` - an object that should be sent in the request. Default value is ``null``.
 * ``accept`` - expected response content type (e.g. value in Accept header). Default value is ``*/*``.
 * ``contentType`` - MIME type that identifies request body encoding scheme. Default value is ``null`` which means that this field will not be set.
-* ``headers`` - a map of custom HTTP headers to send with the request. ``accept`` and ``contentType`` options take precedence.
+* ``xhrCallback`` - a callback that takes an instance of XMLHttpRequest and does custom configuration on it. ``accept`` and ``contentType`` options take precedence over changes made in this callback.
 
 The simpler counterpart - ``request`` function uses different defaults. It sets contentType to ``application/json`` whenever request body is passed to ``request`` function. Also it always sets Accept header to ``application/json`` and finally ``responseType`` is always ``json``.
 
