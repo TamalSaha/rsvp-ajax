@@ -66,6 +66,7 @@ function createHttpRequestHandler(resolve, reject) {
  *    <tt>responseType</tt> Response type code, can be null - if so, default value 'text' will be picked up
  *    <tt>accept</tt> MIME type to be passed in 'Accept' header
  *    <tt>contentType</tt> MIME type to be put to 'Content-Type' header, can be null if requestBody is null
+ *    <tt>headers</tt> Custom headers for the HTTP request, accept and contentType options take precedence
  *
  * @return A new rsvp.Promise instance
  */
@@ -76,12 +77,18 @@ function requestObject(options) {
   var requestBody = options.requestBody || null;
   var accept = options.accept || "*/*";
   var contentType = options.contentType || null;
+  var headers = options.headers || {};
 
   return new rsvp.Promise(function(resolve, reject) {
     var client = new HttpRequest();
     client.open(method, url);
     client.onreadystatechange = createHttpRequestHandler(resolve, reject);
     client.responseType = responseType;
+    for (var header in headers) {
+      if (headers.hasOwnProperty(header)) {
+        client.setRequestHeader(header, headers[header]);
+      }
+    }
     client.setRequestHeader("Accept", accept);
 
     if (requestBody != null) {

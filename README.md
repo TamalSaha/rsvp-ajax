@@ -57,7 +57,8 @@ For example, sending a request body in plain text form and receive response as p
     url: "/rest/password/encode", // ...to this relative URL
     requestBody: password,        // ...using requestBody as string
     contentType: "text/plain",    // ...set Content-Type to text/plain
-    accept: "text/plain"          // ...set Accept to text/plain
+    accept: "text/plain",         // ...set Accept to text/plain
+    headers: {...}                // ...set custom headers
   });
 ```
 
@@ -69,6 +70,7 @@ All the parameters expected by ``requestObject`` function:
 * ``requestBody`` - an object that should be sent in the request. Default value is ``null``.
 * ``accept`` - expected response content type (e.g. value in Accept header). Default value is ``*/*``.
 * ``contentType`` - MIME type that identifies request body encoding scheme. Default value is ``null`` which means that this field will not be set.
+* ``headers`` - a map of custom HTTP headers to send with the request. ``accept`` and ``contentType`` options take precedence.
 
 The simpler counterpart - ``request`` function uses different defaults. It sets contentType to ``application/json`` whenever request body is passed to ``request`` function. Also it always sets Accept header to ``application/json`` and finally ``responseType`` is always ``json``.
 

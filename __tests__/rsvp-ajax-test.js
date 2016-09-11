@@ -69,6 +69,9 @@ describe('request handling', function () {
     jest.runAllTimers();
 
     expect(resultHolder).toEqual(mockResult);
+    expect(stub._headers).toEqual({
+      'Accept': 'application/json'
+    });
   });
 
   it('should handle POST', function () {
@@ -99,6 +102,10 @@ describe('request handling', function () {
 
     expect(resultHolder).toEqual(mockResult);
     expect(stub._bodies[0]).toEqual(JSON.stringify(body));
+    expect(stub._headers).toEqual({
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    });
   });
 
   it('should emit error event', function () {
@@ -157,6 +164,55 @@ describe('request handling', function () {
     jest.runAllTimers();
 
     expect(holder.xhr).toEqual(null);
+  });
+
+  it('should set custom headers', function () {
+    // Given:
+    var s = require('../rsvp-ajax.js');
+    var mockResult = {"mock": "result"};
+    var body = {a: 1, b: [2], c: "3", d: {e: 4}};
+    var resultHolder = null;
+
+    // When:
+    var promise = s.requestObject({
+      method: 'PUT',
+      url: '/rest/something',
+      requestBody: JSON.stringify(body),
+      accept: 'application/json',
+      contentType: 'application/json',
+      responseType: 'json',
+      headers: {
+        'Accept': 'text/plain', // attempt to override 'Accept' header (should be ignored)
+        'Content-Type': 'text/plain', // attempt to override 'Content-Type' header (should be ignored)
+        'X-MyHeader': 'MyValue',
+        'X-MyHeader2': 'MyValue2'
+      }
+    });
+    promise.then(function (data) {
+      resultHolder = data;
+    });
+
+    // Then:
+    expect(stubs.length).toBe(1);
+    expect(resultHolder).toBe(null);
+
+    // prepare the result, signal about completion and make sure promise handler caught it
+    var stub = stubs[0];
+    stub.status = 200;
+    stub.readyState = DONE;
+    stub.response = mockResult;
+    stub.onreadystatechange();
+
+    jest.runAllTimers();
+
+    expect(resultHolder).toEqual(mockResult);
+    expect(stub._bodies[0]).toEqual(JSON.stringify(body));
+    expect(stub._headers).toEqual({
+      'Accept': 'application/json', // this should not be overridden
+      'Content-Type': 'application/json', // this should not be overridden
+      'X-MyHeader': 'MyValue',
+      'X-MyHeader2': 'MyValue2'
+    });
   });
 });
 
