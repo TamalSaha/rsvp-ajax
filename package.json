@@ -1,6 +1,6 @@
 {
   "name": "rsvp-ajax",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple AJAX library built on top of RSVP promises. This library has no dependency other than rsvp.js",
   "main": "rsvp-ajax.js",
   "devDependencies": {
