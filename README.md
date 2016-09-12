@@ -58,7 +58,9 @@ For example, sending a request body in plain text form and receive response as p
     requestBody: password,        // ...using requestBody as string
     contentType: "text/plain",    // ...set Content-Type to text/plain
     accept: "text/plain",         // ...set Accept to text/plain
-    headers: {...}                // ...set custom headers
+    xhrCallback: function (xhr) { // ...using custom configuration for underlying XMLHttpRequest
+      xhr.timeout = 2000; // set response timeout to 2 seconds
+    }
   });
 ```
 
@@ -70,9 +72,25 @@ All the parameters expected by ``requestObject`` function:
 * ``requestBody`` - an object that should be sent in the request. Default value is ``null``.
 * ``accept`` - expected response content type (e.g. value in Accept header). Default value is ``*/*``.
 * ``contentType`` - MIME type that identifies request body encoding scheme. Default value is ``null`` which means that this field will not be set.
-* ``headers`` - a map of custom HTTP headers to send with the request. ``accept`` and ``contentType`` options take precedence.
+* ``xhrCallback`` - a callback that takes an instance of XMLHttpRequest and does custom configuration on it. ``accept`` and ``contentType`` options take precedence over changes made in this callback.
 
 The simpler counterpart - ``request`` function uses different defaults. It sets contentType to ``application/json`` whenever request body is passed to ``request`` function. Also it always sets Accept header to ``application/json`` and finally ``responseType`` is always ``json``.
 
 The fulfilled promise handler of the result of ``request`` and ``requestObject`` function calls always takes a decoded response body and failed promise handler always takes an instance of ``XMLHttpRequest`` used to make the associated AJAX call.
+
+## Global AJAX error handlers
+
+Sometimes it might be convenient to set error handler in a uniform way for all the AJAX requests.
+It can be done by subscribing to global event defined in ``rsvp-ajax`` library:
+
+```js
+  var ajax = require('rsvp-ajax');
+
+  var xhrErrorSubscription = ajax.on(ajax.XHR_ERROR, function (xmlHttpRequest) {
+    // ... extract error information from xmlHttpRequest
+  });
+
+  // if later we need to unsubscribe from XHR_ERROR, one can do:
+  ajax.off(ajax.XHR_ERROR, xhrErrorSubscription);
+```
 

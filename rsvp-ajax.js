@@ -59,6 +59,11 @@ function createHttpRequestHandler(resolve, reject) {
 /**
  * Creates a new HTTP request for data fetched by using async AJAX interface.
  *
+ * This method also allows flexible configuration of newly created XMLHttpRequest by means of using
+ * provided xhrCallback. If this property is set by the caller, it is used in order to do extra initialization of newly
+ * created XMLHttpRequest. This initialization is done prior to setting 'Accept' and 'Content-Type' headers, so if
+ * this callback modifies these headers, these changes will be overridden.
+ *
  * @arg options Request options:
  *    <tt>options.method</tt> String, that identifies HTTP request method, e.g. 'GET', 'PUT', 'POST', 'DELETE'
  *    <tt>url</tt> URL to the AJAX resource, e.g. '/rest/ajax/foo/bar/baz'
@@ -66,7 +71,7 @@ function createHttpRequestHandler(resolve, reject) {
  *    <tt>responseType</tt> Response type code, can be null - if so, default value 'text' will be picked up
  *    <tt>accept</tt> MIME type to be passed in 'Accept' header
  *    <tt>contentType</tt> MIME type to be put to 'Content-Type' header, can be null if requestBody is null
- *    <tt>headers</tt> Custom headers for the HTTP request, accept and contentType options take precedence
+ *    <tt>xhrCallback</tt> A callback with extra initialization that needs to be done for XMLHttpRequest, can be null
  *
  * @return A new rsvp.Promise instance
  */
@@ -77,17 +82,15 @@ function requestObject(options) {
   var requestBody = options.requestBody || null;
   var accept = options.accept || "*/*";
   var contentType = options.contentType || null;
-  var headers = options.headers || {};
+  var xhrCallback = options.xhrCallback || null;
 
   return new rsvp.Promise(function(resolve, reject) {
     var client = new HttpRequest();
     client.open(method, url);
     client.onreadystatechange = createHttpRequestHandler(resolve, reject);
     client.responseType = responseType;
-    for (var header in headers) {
-      if (headers.hasOwnProperty(header)) {
-        client.setRequestHeader(header, headers[header]);
-      }
+    if (xhrCallback != null) {
+      xhrCallback(client);
     }
     client.setRequestHeader("Accept", accept);
 

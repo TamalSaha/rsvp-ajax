@@ -21,6 +21,8 @@ describe('request handling', function () {
     this.readyState = null;
     this.response = null;
     this.status = null;
+    this.withCredentials = false;
+    this.timeout = 5000;
     stubs.push(this);
   };
 
@@ -172,6 +174,7 @@ describe('request handling', function () {
     var mockResult = {"mock": "result"};
     var body = {a: 1, b: [2], c: "3", d: {e: 4}};
     var resultHolder = null;
+    var customTimeout = 1234;
 
     // When:
     var promise = s.requestObject({
@@ -181,11 +184,15 @@ describe('request handling', function () {
       accept: 'application/json',
       contentType: 'application/json',
       responseType: 'json',
-      headers: {
-        'Accept': 'text/plain', // attempt to override 'Accept' header (should be ignored)
-        'Content-Type': 'text/plain', // attempt to override 'Content-Type' header (should be ignored)
-        'X-MyHeader': 'MyValue',
-        'X-MyHeader2': 'MyValue2'
+      xhrCallback: function (xhr) {
+        xhr.setRequestHeader('Accept', 'text/plain'); // attempt to override 'Accept' header (should be ignored)
+        xhr.setRequestHeader('Content-Type', 'text/plain'); // attempt to override 'Content-Type' header (should be ignored)
+        xhr.setRequestHeader('X-MyHeader', 'MyValue');
+        xhr.setRequestHeader('X-MyHeader2', 'MyValue2');
+
+        xhr.timeout = customTimeout;
+
+        xhr.withCredentials = true;
       }
     });
     promise.then(function (data) {
@@ -207,6 +214,8 @@ describe('request handling', function () {
 
     expect(resultHolder).toEqual(mockResult);
     expect(stub._bodies[0]).toEqual(JSON.stringify(body));
+    expect(stub.timeout).toBe(customTimeout);
+    expect(stub.withCredentials).toBe(true);
     expect(stub._headers).toEqual({
       'Accept': 'application/json', // this should not be overridden
       'Content-Type': 'application/json', // this should not be overridden
